@@ -3,6 +3,7 @@ package com.mapr.demo.stock_ticker;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.lang.Exception;
 
 import com.google.common.base.Charsets;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -107,7 +108,10 @@ public class Producer {
     }
 
     public static void main(String[] args) throws IOException, Exception {
-        Producer p = new Producer("/user/pcurtis/taq:trades", new File("/space/taqtrade20131218_sorted"));
+        if (args.length != 2) {
+            throw new Exception("Usage: java -cp target/stock-ticker-1.0.jar stream:topic [file name | directory]");
+        }
+        Producer p = new Producer(args[0], new File(args[1]));
         p.produce();
     }
 }
