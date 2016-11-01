@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.lang.Exception;
+import java.lang.Thread;
 
 import com.google.common.base.Charsets;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -26,6 +27,7 @@ public class Producer {
     private static final AtomicLong PROCESSED = new AtomicLong();
     private final String topic;
     private final File taqFile;
+    private int current, last = 0;
 
     public Producer(final String topic, final File f) {
         this.taqFile = f;
@@ -57,14 +59,18 @@ public class Producer {
             try {
                 while (line != null) {
                     long current_time = System.nanoTime();
-                    String key = Long.toString(current_time);
-                    //String key = Long.toString(Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTimeInMillis());
+		    String key = line.substring(0, 16);
                     ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key, line.getBytes(Charsets.ISO_8859_1));
 
                     producer.send(record, (RecordMetadata metadata, Exception e) -> {
                         PROCESSED.incrementAndGet();
                     });
 
+                    current = Integer.parseInt(line.substring(6, 3));
+                    if ((current - last) < 0)
+                        current += 1000;
+                    Thread.sleep(current - last);
+                    last = current;
                     // Print performance stats once per second
                     if ((Math.floor(current_time - startTime) / 1e9) > last_update) {
                         last_update++;

@@ -94,7 +94,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>com.mapr.demo.finserv.Run</mainClass>
+							<mainClass>com.mapr.demo.stock_ticker.Producer</mainClass>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
 						</manifest>
