@@ -119,7 +119,7 @@ public class Producer {
                           rp,
                           poolSize,
                           records_processed);
-        ProducerRecord<String, byte[]> stats_event = new ProducerRecord<>(stats, Long.toString(elapsedTime), 
+        ProducerRecord<String, byte[]> stats_event = new ProducerRecord<>(stats, Long.toString(elapsedTime / 1000), 
             new Double(rp).toString().getBytes(Charsets.ISO_8859_1));
                     producer.send(stats_event);
     }
