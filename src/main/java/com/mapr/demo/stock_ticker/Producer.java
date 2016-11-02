@@ -26,12 +26,14 @@ public class Producer {
     private static final LinkedList<File> DATAFILES = new LinkedList<>();
     private static final AtomicLong PROCESSED = new AtomicLong();
     private final String topic;
+    private static String stats;
     private final File taqFile;
     private int current, last = 0;
 
     public Producer(final String topic, final File f) {
         this.taqFile = f;
         this.topic = topic;
+        this.stats = topic + "_stats";
         configureProducer();
         if (taqFile.isDirectory()) {
             for (final File fileEntry : taqFile.listFiles()) {
@@ -55,7 +57,7 @@ public class Producer {
             FileReader fr = new FileReader(f);
             BufferedReader reader = new BufferedReader(fr);
             String line = reader.readLine();
-            static int interval = 0;
+            int interval = 0;
 
             try {
                 while (line != null) {
@@ -112,10 +114,14 @@ public class Producer {
 
     public static void printStatus(long records_processed, int poolSize, long startTime) {
         long elapsedTime = System.nanoTime() - startTime;
+        double rp = records_processed / ((double) elapsedTime / 1000000000.0) / 1000;
         System.out.printf("Throughput = %.2f Kmsgs/sec published. Threads = %d. Total published = %d.\n",
-                          records_processed / ((double) elapsedTime / 1000000000.0) / 1000,
+                          rp,
                           poolSize,
                           records_processed);
+        ProducerRecord<String, byte[]> stats_event = new ProducerRecord<>(stats, Long.toString(elapsedTime), 
+            new Double(rp).toString().getBytes(Charsets.ISO_8859_1));
+                    producer.send(stats_event);
     }
 
     public static void main(String[] args) throws IOException, Exception {
