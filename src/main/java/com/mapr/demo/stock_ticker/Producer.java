@@ -55,6 +55,7 @@ public class Producer {
             FileReader fr = new FileReader(f);
             BufferedReader reader = new BufferedReader(fr);
             String line = reader.readLine();
+            static int interval = 0;
 
             try {
                 while (line != null) {
@@ -66,10 +67,12 @@ public class Producer {
                         PROCESSED.incrementAndGet();
                     });
 
-                    current = Integer.parseInt(line.substring(6, 3));
+                    current = Integer.parseInt(line.substring(6, 9));
                     if ((current - last) < 0)
-                        current += 1000;
-                    Thread.sleep(current - last);
+                        interval = (current + 1000) - last;
+                    else
+                        interval = current - last;
+                    Thread.sleep(interval);
                     last = current;
                     // Print performance stats once per second
                     if ((Math.floor(current_time - startTime) / 1e9) > last_update) {
@@ -82,6 +85,8 @@ public class Producer {
 
             } catch (Exception e) {
                 System.err.println("ERROR: " + e);
+                System.err.println("Line :'"+line+"'");
+                e.printStackTrace();
             }
         }
         producer.flush();
@@ -118,6 +123,10 @@ public class Producer {
             throw new Exception("Usage: java -cp target/stock-ticker-1.0.jar stream:topic [file name | directory]");
         }
         Producer p = new Producer(args[0], new File(args[1]));
-        p.produce();
+        try {
+            p.produce();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
